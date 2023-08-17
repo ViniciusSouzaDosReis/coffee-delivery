@@ -52,10 +52,30 @@ export const SectionIntroContainer = styled.section`
           justify-content: center;
           align-items: center;
 
-          background-color: red;
-
+          
           padding: 0.5rem;
           border-radius: 100%;
+        }
+        
+        &:nth-child(1){
+          span{
+            background-color: ${(props) => props.theme['yellow-dark']};
+          }
+        }
+        &:nth-child(2){
+          span{
+            background-color: ${(props) => props.theme['yellow']};
+          }
+        }
+        &:nth-child(3){
+          span{
+            background-color: ${(props) => props.theme['base-text']};
+          }
+        }
+        &:nth-child(4){
+          span{
+            background-color: ${(props) => props.theme['purple']};
+          }
         }
       }
     }
