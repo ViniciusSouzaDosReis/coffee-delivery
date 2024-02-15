@@ -1,17 +1,15 @@
-import { CoffeeCard } from './components/CoffeeCard'
-import {
-  CoffeeListContainer
-} from './styles'
+import { CoffeeCard } from "./components/CoffeeCard";
+import { CoffeeListContainer, CoffeeCardContainer } from "./styles";
 
 function CoffeeList() {
   return (
     <CoffeeListContainer>
       <h2>Nossos cafés</h2>
-      <div>
+      <CoffeeCardContainer>
         <CoffeeCard />
-      </div>
+      </CoffeeCardContainer>
     </CoffeeListContainer>
-  )
+  );
 }
 
-export { CoffeeList }
+export { CoffeeList };
