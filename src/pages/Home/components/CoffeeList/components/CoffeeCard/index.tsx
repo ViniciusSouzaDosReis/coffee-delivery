@@ -8,6 +8,8 @@ import {
   TagTypeCoffee,
   TagTypeCoffeeContainer,
 } from "./styles";
+import { useContext, useState } from "react";
+import { CartContext } from "../../../../../../contexts/CartContext";
 
 interface CoffeeCardProps {
   imageUrl: string;
@@ -24,6 +26,23 @@ function CoffeeCard({
   description,
   price,
 }: CoffeeCardProps) {
+  const { addProduct } = useContext(CartContext);
+  const [count, setCount] = useState(0);
+
+  function handleAddProduct() {
+    const product = {
+      imageUrl,
+      title,
+      price,
+    };
+
+    for (let i = 0; i < count; i++) {
+      addProduct(product);
+    }
+
+    setCount(0);
+  }
+
   return (
     <CoffeeCardContainer>
       <span>
@@ -44,15 +63,15 @@ function CoffeeCard({
         </span>
         <ActionsContainer>
           <Counter>
-            <button>
+            <button onClick={() => setCount(count - 1 < 0 ? 0 : count - 1)}>
               <Minus color="#8047F8" weight="bold" size={14} />
             </button>
-            1
-            <button>
+            {count}
+            <button onClick={() => setCount(count + 1)}>
               <Plus color="#8047F8" weight="bold" size={14} />
             </button>
           </Counter>
-          <button>
+          <button onClick={() => handleAddProduct()}>
             <ShoppingCartSimple size={22} weight="fill" color="white" />
           </button>
         </ActionsContainer>
