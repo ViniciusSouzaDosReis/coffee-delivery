@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 export const CoffeeListContainer = styled.section`
-  padding: 2rem 10rem;
+  padding-block: 2rem;
 
   h2 {
     color: ${(props) => props.theme["base-subtitle"]};
