@@ -1,7 +1,6 @@
 import { CoffeeCard } from "./components/CoffeeCard";
 import { CoffeeListContainer, CoffeeCardContainer } from "./styles";
-// import coffeeImage from "../../images/Image.png";
-import coffeeImage from "./images/Image.png";
+import coffeeImage from "../../../../assets/Coffee1.png";
 
 function CoffeeList() {
   return (
