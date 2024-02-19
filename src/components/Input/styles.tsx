@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 export const InputContainer = styled.div`
   position: relative;
-  max-width: 35rem;
+  min-width: 3.75rem;
 `;
 
 export const InputContent = styled.input`
