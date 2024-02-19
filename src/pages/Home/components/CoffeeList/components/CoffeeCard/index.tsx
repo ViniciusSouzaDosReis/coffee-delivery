@@ -17,6 +17,7 @@ interface CoffeeCardProps {
   title: string;
   description: string;
   price: string;
+  id: string;
 }
 
 function CoffeeCard({
@@ -25,22 +26,25 @@ function CoffeeCard({
   title,
   description,
   price,
+  id,
 }: CoffeeCardProps) {
   const { addProduct } = useContext(CartContext);
   const [count, setCount] = useState(0);
 
   function handleAddProduct() {
-    const product = {
-      imageUrl,
-      title,
-      price,
-    };
+    if (count > 0) {
+      const product = {
+        imageUrl,
+        title,
+        price,
+        id,
+        amount: count,
+      };
 
-    for (let i = 0; i < count; i++) {
       addProduct(product);
-    }
 
-    setCount(0);
+      setCount(0);
+    }
   }
 
   return (

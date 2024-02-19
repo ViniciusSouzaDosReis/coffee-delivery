@@ -13,6 +13,7 @@ function CoffeeList() {
           description="O tradicional café feito com água quente e grãos moídos"
           price="9, 90"
           imageUrl={coffeeImage}
+          id="1"
         />
         <CoffeeCard
           types={["Tradicional", "Gelado", "Espresso"]}
@@ -20,6 +21,7 @@ function CoffeeList() {
           description="O tradicional café feito com água quente e grãos moídos"
           price="9, 90"
           imageUrl={coffeeImage}
+          id="2"
         />
       </CoffeeCardContainer>
     </CoffeeListContainer>
