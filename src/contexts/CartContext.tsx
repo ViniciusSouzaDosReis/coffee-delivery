@@ -16,6 +16,8 @@ interface productType {
   imageUrl: string;
   title: string;
   price: string;
+  id: string;
+  amount: number;
 }
 
 interface CartState {
@@ -49,7 +51,18 @@ export function CartContextProvider({ children }: CartContextProviderProps) {
         switch (action.type) {
           case CartActionTypes.ADD_PRODUCT:
             return produce(state, (draft) => {
-              draft.products.push(payload.product);
+              const haveThisProductInCart = draft.products.find(
+                (product) => product.id === payload.product.id
+              );
+              if (haveThisProductInCart) {
+                draft.products.map((product) => {
+                  if (product.id === payload.product.id) {
+                    product.amount += payload.product.amount;
+                  }
+                });
+              } else {
+                draft.products.push(payload.product);
+              }
             });
           default:
             return state;
