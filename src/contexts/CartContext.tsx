@@ -1,9 +1,17 @@
 import { produce } from "immer";
 import { ReactNode, createContext, useReducer } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { OrderPaymentFormData } from "../pages/Checkout";
 
 interface CartContextType {
   products: productType[];
+  price: number;
   addProduct: (data: productType) => void;
+  removeProduct: (daata: productType) => void;
+  reduceProduct: (data: productType) => void;
+  includeProduct: (data: productType) => void;
+  finalizeOrder: (order: OrderPaymentFormData) => void;
 }
 
 export const CartContext = createContext({} as CartContextType);
@@ -26,6 +34,10 @@ interface CartState {
 
 enum CartActionTypes {
   ADD_PRODUCT = "ADD_PRODUCT",
+  REMOVE_PRODUCT = "REMOVE_PRODUCT",
+  REDUCE_PRODUCT = "REDUCE_PRODUCT",
+  INCLUDE_PRODUCT = "INCLUDE_PRODUCT",
+  FINALIZE_ORDER = "FINALIZE_ORDER",
   INTERRUPT_CURRENT_CYCLE = "INTERRUPT_CURRENT_CYCLE",
   MARK_CURRENT_CYCLE_AS_FINISHED = "MARK_CURRENT_CYCLE_AS_FINISHED",
 }
@@ -64,6 +76,39 @@ export function CartContextProvider({ children }: CartContextProviderProps) {
                 draft.products.push(payload.product);
               }
             });
+          case CartActionTypes.REMOVE_PRODUCT:
+            return produce(state, (draft) => {
+              const productsWithoutThisProduct = draft.products.filter(
+                (product) => {
+                  return product.id !== payload.product.id;
+                }
+              );
+
+              draft.products = productsWithoutThisProduct;
+            });
+
+          case CartActionTypes.REDUCE_PRODUCT:
+            return produce(state, (draft) => {
+              draft.products.map((product) => {
+                if (product.id === payload.product.id) {
+                  product.amount -= 1;
+                }
+              });
+            });
+
+          case CartActionTypes.INCLUDE_PRODUCT:
+            return produce(state, (draft) => {
+              draft.products.map((product) => {
+                if (product.id === payload.product.id) {
+                  product.amount += 1;
+                }
+              });
+            });
+
+          case CartActionTypes.FINALIZE_ORDER:
+            return produce(state, (draft) => {
+              draft.products = [];
+            });
           default:
             return state;
         }
@@ -77,7 +122,14 @@ export function CartContextProvider({ children }: CartContextProviderProps) {
     }
   );
 
+  const navigate = useNavigate();
+
   const { products } = cartState;
+
+  const price = products.reduce((acc, cur) => {
+    const numberPrice = parseFloat(cur.price.replace(", ", "."));
+    return numberPrice * cur.amount + acc;
+  }, 0);
 
   function addProduct(data: productType) {
     const action = {
@@ -90,8 +142,65 @@ export function CartContextProvider({ children }: CartContextProviderProps) {
     dispatch(action);
   }
 
+  function removeProduct(data: productType) {
+    const action = {
+      type: CartActionTypes.REMOVE_PRODUCT,
+      payload: {
+        product: data,
+      },
+    };
+
+    dispatch(action);
+  }
+
+  function reduceProduct(data: productType) {
+    const action = {
+      type: CartActionTypes.REDUCE_PRODUCT,
+      payload: {
+        product: data,
+      },
+    };
+
+    dispatch(action);
+  }
+
+  function includeProduct(data: productType) {
+    const action = {
+      type: CartActionTypes.INCLUDE_PRODUCT,
+      payload: {
+        product: data,
+      },
+    };
+
+    dispatch(action);
+  }
+
+  function finalizeOrder(order: OrderPaymentFormData) {
+    console.log({
+      orderInfo: order,
+      productInfo: { ...products, price: price + 3.5 },
+    });
+
+    const action = {
+      type: CartActionTypes.FINALIZE_ORDER,
+    };
+
+    dispatch(action);
+    navigate("success")
+  }
+
   return (
-    <CartContext.Provider value={{ addProduct, products }}>
+    <CartContext.Provider
+      value={{
+        products,
+        price,
+        addProduct,
+        removeProduct,
+        reduceProduct,
+        includeProduct,
+        finalizeOrder,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
