@@ -29,7 +29,7 @@ export const LocationInfoContainer = styled.div`
   padding-block: 2.5rem;
 `;
 
-export const FormLocation = styled.form`
+export const FormLocation = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;

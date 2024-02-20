@@ -1,55 +1,39 @@
-import { Minus, Plus, Trash } from "phosphor-react";
-import { Counter } from "../../../Home/components/CoffeeList/components/CoffeeCard/styles";
+import React from "react";
+import { useContext } from "react";
+
 import { Title } from "../../styles";
 import {
   OrderInformationContainer,
   OrderInformationContent,
-  CoffeeCard,
-  CoffeeInfo,
-  CoffeeImage,
-  CoffeeDetails,
-  Actions,
   PaymentInformationContainer,
 } from "./style";
 
-import coffeeImage from "../../../../assets/Coffee1.png";
+import { CartContext } from "../../../../contexts/CartContext";
+import { CoffeeCard } from "./components/CoffeeCard";
 
 function OrderInformation() {
+  const { products, price } = useContext(CartContext);
+
   return (
     <OrderInformationContainer>
       <Title>Cafés selecionados</Title>
       <OrderInformationContent>
-        <CoffeeCard>
-          <CoffeeInfo>
-            <CoffeeImage>
-              <img src={coffeeImage} alt="Imagem de um café" />
-            </CoffeeImage>
-            <CoffeeDetails>
-              <span>Expresso Tradicional</span>
-              <Actions>
-                <Counter>
-                  <button>
-                    <Minus color="#8047F8" weight="bold" size={14} />
-                  </button>
-                  0
-                  <button>
-                    <Plus color="#8047F8" weight="bold" size={14} />
-                  </button>
-                </Counter>
-                <button>
-                  <Trash color="#8047F8" size={16} />
-                  Remover
-                </button>
-              </Actions>
-            </CoffeeDetails>
-          </CoffeeInfo>
-          <strong>R$ 9,90</strong>
-        </CoffeeCard>
-        <hr />
+        {products.map((product) => (
+          <React.Fragment key={product.id}>
+            <CoffeeCard
+              image={product.imageUrl}
+              amount={product.amount}
+              price={product.price}
+              title={product.title}
+              id={product.id}
+            />
+            <hr />
+          </React.Fragment>
+        ))}
         <PaymentInformationContainer>
           <div>
             <div>Total de itens</div>
-            <div>R$ 29,70</div>
+            <div>R$ {price.toFixed(2).toString().replace(".", ", ")}</div>
           </div>
           <div>
             <div>Entrega</div>
@@ -57,10 +41,14 @@ function OrderInformation() {
           </div>
           <div>
             <strong>Total</strong>
-            <strong>R$ 33,20</strong>
+            <strong>
+              R$ {(price + 3.5).toFixed(2).toString().replace(".", ", ")}
+            </strong>
           </div>
         </PaymentInformationContainer>
-        <button>confirmar pedido</button>
+        <button type="submit">
+          confirmar pedido
+        </button>
       </OrderInformationContent>
     </OrderInformationContainer>
   );

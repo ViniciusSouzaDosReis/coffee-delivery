@@ -9,6 +9,8 @@ export const Title = styled.strong`
 `;
 
 export const CheckoutContainer = styled.div`
-  display: flex;
-  gap: 2rem;
+  & > form {
+    display: flex;
+    gap: 2rem;
+  }
 `;
