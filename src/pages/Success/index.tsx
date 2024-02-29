@@ -8,8 +8,15 @@ import {
   OrderInformationContainer,
   OrderInformationLine,
 } from "./style";
+import { useContext } from "react";
+import { CartContext } from "../../contexts/CartContext";
 
 function Success() {
+  const { placeOfDelivery } = useContext(CartContext);
+
+  const { city, uf, street, neighborhood, number, paymentMethod } =
+    placeOfDelivery;
+
   return (
     <>
       <CongratulationText>
@@ -24,9 +31,12 @@ function Success() {
                 <MapPin size={16} color="white" weight="fill" />
               </div>
               <p>
-                Entrega em <strong>Rua João Daniel Martinelli, 102</strong>
+                Entrega em{" "}
+                <strong>
+                  {street}, {number}
+                </strong>
                 <br />
-                Farrapos - Porto Alegre, RS
+                {neighborhood} - {city}, {uf}
               </p>
             </OrderInformationLine>
             <OrderInformationLine $color="yellow">
@@ -46,7 +56,7 @@ function Success() {
               <p>
                 Pagamento na entrega
                 <br />
-                <strong>Cartão de Crédito</strong>
+                <strong>{paymentMethod}</strong>
               </p>
             </OrderInformationLine>
           </OrderInformationContainer>
