@@ -3,10 +3,15 @@ import { ReactNode, createContext, useReducer } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { OrderPaymentFormData } from "../pages/Checkout";
+import {
+  PaymentMethodTypes,
+  translatePaymentMethodToPortugues,
+} from "../utils/translatesFunctions";
 
 interface CartContextType {
   products: productType[];
   price: number;
+  placeOfDelivery: placeOfDeliveryType;
   addProduct: (data: productType) => void;
   removeProduct: (daata: productType) => void;
   reduceProduct: (data: productType) => void;
@@ -28,8 +33,19 @@ interface productType {
   amount: number;
 }
 
+interface placeOfDeliveryType {
+  cep: string;
+  street: string;
+  number: string;
+  neighborhood: string;
+  city: string;
+  uf: string;
+  paymentMethod: string;
+}
+
 interface CartState {
   products: productType[];
+  placeOfDelivery: placeOfDeliveryType;
 }
 
 enum CartActionTypes {
@@ -44,6 +60,7 @@ enum CartActionTypes {
 
 interface payloadType {
   product: productType;
+  placeOfDelivery?: placeOfDeliveryType;
 }
 
 interface Action {
@@ -108,6 +125,8 @@ export function CartContextProvider({ children }: CartContextProviderProps) {
           case CartActionTypes.FINALIZE_ORDER:
             return produce(state, (draft) => {
               draft.products = [];
+              if (payload.placeOfDelivery)
+                draft.placeOfDelivery = payload.placeOfDelivery;
             });
           default:
             return state;
@@ -116,7 +135,18 @@ export function CartContextProvider({ children }: CartContextProviderProps) {
         return state;
       }
     },
-    { products: [] },
+    {
+      products: [],
+      placeOfDelivery: {
+        cep: "",
+        street: "",
+        number: "",
+        neighborhood: "",
+        city: "",
+        uf: "",
+        paymentMethod: "",
+      },
+    },
     (initialState) => {
       return initialState;
     }
@@ -124,7 +154,7 @@ export function CartContextProvider({ children }: CartContextProviderProps) {
 
   const navigate = useNavigate();
 
-  const { products } = cartState;
+  const { products, placeOfDelivery } = cartState;
 
   const price = products.reduce((acc, cur) => {
     const numberPrice = parseFloat(cur.price.replace(", ", "."));
@@ -176,17 +206,26 @@ export function CartContextProvider({ children }: CartContextProviderProps) {
   }
 
   function finalizeOrder(order: OrderPaymentFormData) {
-    console.log({
-      orderInfo: order,
-      productInfo: { ...products, price: price + 3.5 },
-    });
+    const paymentMethod = translatePaymentMethodToPortugues(
+      order.paymentMethod as PaymentMethodTypes
+    );
 
     const action = {
       type: CartActionTypes.FINALIZE_ORDER,
+      payload: {
+        product: {
+          imageUrl: "",
+          title: "",
+          price: "",
+          id: "",
+          amount: 0,
+        },
+        placeOfDelivery: { ...order, paymentMethod },
+      },
     };
 
     dispatch(action);
-    navigate("success")
+    navigate("success");
   }
 
   return (
@@ -194,6 +233,7 @@ export function CartContextProvider({ children }: CartContextProviderProps) {
       value={{
         products,
         price,
+        placeOfDelivery,
         addProduct,
         removeProduct,
         reduceProduct,
