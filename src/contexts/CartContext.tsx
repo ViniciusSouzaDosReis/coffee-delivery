@@ -1,5 +1,4 @@
 import { version } from "../../package.json";
-import { produce } from "immer";
 import { ReactNode, createContext, useEffect, useReducer } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -8,6 +7,18 @@ import {
   PaymentMethodTypes,
   translatePaymentMethodToPortugues,
 } from "../utils/translatesFunctions";
+import {
+  cartReducer,
+  placeOfDeliveryType,
+  productType,
+} from "../reducers/cart/reducer";
+import {
+  reduceProductAction,
+  includeProductAction,
+  addProductAction,
+  removeProductAction,
+  finalizeOrderAction,
+} from "../reducers/cart/actions";
 
 interface CartContextType {
   products: productType[];
@@ -26,112 +37,9 @@ interface CartContextProviderProps {
   children: ReactNode;
 }
 
-interface productType {
-  imageUrl: string;
-  title: string;
-  price: string;
-  id: string;
-  amount: number;
-}
-
-interface placeOfDeliveryType {
-  cep: string;
-  street: string;
-  number: string;
-  neighborhood: string;
-  city: string;
-  uf: string;
-  paymentMethod: string;
-}
-
-interface CartState {
-  products: productType[];
-  placeOfDelivery: placeOfDeliveryType;
-}
-
-enum CartActionTypes {
-  ADD_PRODUCT = "ADD_PRODUCT",
-  REMOVE_PRODUCT = "REMOVE_PRODUCT",
-  REDUCE_PRODUCT = "REDUCE_PRODUCT",
-  INCLUDE_PRODUCT = "INCLUDE_PRODUCT",
-  FINALIZE_ORDER = "FINALIZE_ORDER",
-  INTERRUPT_CURRENT_CYCLE = "INTERRUPT_CURRENT_CYCLE",
-  MARK_CURRENT_CYCLE_AS_FINISHED = "MARK_CURRENT_CYCLE_AS_FINISHED",
-}
-
-interface payloadType {
-  product: productType;
-  placeOfDelivery?: placeOfDeliveryType;
-}
-
-interface Action {
-  type: CartActionTypes;
-  payload?: payloadType;
-}
-
 export function CartContextProvider({ children }: CartContextProviderProps) {
   const [cartState, dispatch] = useReducer(
-    (state: CartState, action: Action) => {
-      const { payload } = action;
-      if (payload) {
-        switch (action.type) {
-          case CartActionTypes.ADD_PRODUCT:
-            return produce(state, (draft) => {
-              const haveThisProductInCart = draft.products.find(
-                (product) => product.id === payload.product.id
-              );
-              if (haveThisProductInCart) {
-                draft.products.map((product) => {
-                  if (product.id === payload.product.id) {
-                    product.amount += payload.product.amount;
-                  }
-                });
-              } else {
-                draft.products.push(payload.product);
-              }
-            });
-          case CartActionTypes.REMOVE_PRODUCT:
-            return produce(state, (draft) => {
-              const productsWithoutThisProduct = draft.products.filter(
-                (product) => {
-                  return product.id !== payload.product.id;
-                }
-              );
-
-              draft.products = productsWithoutThisProduct;
-            });
-
-          case CartActionTypes.REDUCE_PRODUCT:
-            return produce(state, (draft) => {
-              draft.products.map((product) => {
-                if (product.id === payload.product.id) {
-                  product.amount -= 1;
-                }
-              });
-            });
-
-          case CartActionTypes.INCLUDE_PRODUCT:
-            return produce(state, (draft) => {
-              draft.products.map((product) => {
-                if (product.id === payload.product.id) {
-                  product.amount += 1;
-                }
-              });
-            });
-
-          case CartActionTypes.FINALIZE_ORDER:
-            return produce(state, (draft) => {
-              draft.products = [];
-              if (payload.placeOfDelivery)
-                draft.placeOfDelivery = payload.placeOfDelivery;
-            });
-          default:
-            return state;
-        }
-      } else {
-        return state;
-      }
-    },
+    cartReducer,
     {
       products: [],
       placeOfDelivery: {
@@ -155,12 +63,6 @@ export function CartContextProvider({ children }: CartContextProviderProps) {
     }
   );
 
-  useEffect(() => {
-    const stateJSON = JSON.stringify(cartState);
-
-    localStorage.setItem(`@coffee-delivery:cart-state-${version}`, stateJSON);
-  }, [cartState]);
-
   const navigate = useNavigate();
 
   const { products, placeOfDelivery } = cartState;
@@ -170,70 +72,36 @@ export function CartContextProvider({ children }: CartContextProviderProps) {
     return numberPrice * cur.amount + acc;
   }, 0);
 
-  function addProduct(data: productType) {
-    const action = {
-      type: CartActionTypes.ADD_PRODUCT,
-      payload: {
-        product: data,
-      },
-    };
+  useEffect(() => {
+    const stateJSON = JSON.stringify(cartState);
 
-    dispatch(action);
+    localStorage.setItem(`@coffee-delivery:cart-state-${version}`, stateJSON);
+  }, [cartState]);
+
+  function addProduct(data: productType) {
+    dispatch(addProductAction(data));
   }
 
   function removeProduct(data: productType) {
-    const action = {
-      type: CartActionTypes.REMOVE_PRODUCT,
-      payload: {
-        product: data,
-      },
-    };
-
-    dispatch(action);
+    dispatch(removeProductAction(data));
   }
 
   function reduceProduct(data: productType) {
-    const action = {
-      type: CartActionTypes.REDUCE_PRODUCT,
-      payload: {
-        product: data,
-      },
-    };
-
-    dispatch(action);
+    dispatch(reduceProductAction(data));
   }
 
   function includeProduct(data: productType) {
-    const action = {
-      type: CartActionTypes.INCLUDE_PRODUCT,
-      payload: {
-        product: data,
-      },
-    };
-
-    dispatch(action);
+    dispatch(includeProductAction(data));
   }
 
-  function finalizeOrder(order: OrderPaymentFormData) {
+  function finalizeOrder(data: OrderPaymentFormData) {
     const paymentMethod = translatePaymentMethodToPortugues(
-      order.paymentMethod as PaymentMethodTypes
+      data.paymentMethod as PaymentMethodTypes
     );
 
-    const action = {
-      type: CartActionTypes.FINALIZE_ORDER,
-      payload: {
-        product: {
-          imageUrl: "",
-          title: "",
-          price: "",
-          id: "",
-          amount: 0,
-        },
-        placeOfDelivery: { ...order, paymentMethod },
-      },
-    };
+    const order = { ...data, paymentMethod };
 
-    dispatch(action);
+    dispatch(finalizeOrderAction(order));
     navigate("success");
   }
 
