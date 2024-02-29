@@ -1,5 +1,6 @@
+import { version } from "../../package.json";
 import { produce } from "immer";
-import { ReactNode, createContext, useReducer } from "react";
+import { ReactNode, createContext, useEffect, useReducer } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { OrderPaymentFormData } from "../pages/Checkout";
@@ -67,10 +68,6 @@ interface Action {
   type: CartActionTypes;
   payload?: payloadType;
 }
-
-// interface ActionType{
-
-// }
 
 export function CartContextProvider({ children }: CartContextProviderProps) {
   const [cartState, dispatch] = useReducer(
@@ -148,9 +145,21 @@ export function CartContextProvider({ children }: CartContextProviderProps) {
       },
     },
     (initialState) => {
+      const storedStateAsJSON = localStorage.getItem(
+        `@coffee-delivery:cart-state-${version}`
+      );
+
+      if (storedStateAsJSON) return JSON.parse(storedStateAsJSON);
+
       return initialState;
     }
   );
+
+  useEffect(() => {
+    const stateJSON = JSON.stringify(cartState);
+
+    localStorage.setItem(`@coffee-delivery:cart-state-${version}`, stateJSON);
+  }, [cartState]);
 
   const navigate = useNavigate();
 
